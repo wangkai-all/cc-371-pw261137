@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scopepack · 数据用途分包控制台</title>
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="mark"></span>
+    <div>
+      <h1>Scopepack</h1>
+      <p>按用途生成不可变数据包 · 下载时逐块复核授权</p>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span id="dataset-pill" class="pill muted">dataset …</span>
+    <span id="health-pill" class="pill muted">registry …</span>
+    <button id="refresh" class="ghost" type="button">刷新</button>
+  </div>
+</header>
+
+<main class="layout">
+  <aside class="sidebar">
+    <div class="panel">
+      <h2>用途</h2>
+      <div id="purpose-list" class="purpose-list"></div>
+    </div>
+    <div class="panel">
+      <h2>下载边缘</h2>
+      <div id="node-list" class="node-list"></div>
+    </div>
+    <div class="panel">
+      <h2>方案说明</h2>
+      <dl class="facts">
+        <dt>生成方式</dt><dd>每用途独立包，构建时裁剪</dd>
+        <dt>读取时裁剪</dt><dd>否（缓存中不含被禁字段）</dd>
+        <dt>在途下载</dt><dd>逐块向登记服务复核</dd>
+        <dt>历史审计</dt><dd>包与记录保留，不可下载</dd>
+      </dl>
+    </div>
+  </aside>
+
+  <section class="content">
+    <div id="empty" class="empty panel">
+      <h2>选择一个用途</h2>
+      <p>左侧列出治理中的用途。选择一个可查看其字段授权、订阅合约、包版本与授权依据。</p>
+    </div>
+
+    <div id="purpose-view" hidden>
+      <div class="panel purpose-head">
+        <div class="purpose-title">
+          <div>
+            <span class="eyebrow" id="purpose-code"></span>
+            <h2 id="purpose-name"></h2>
+            <p id="purpose-desc" class="muted"></p>
+          </div>
+          <div class="policy-badge" id="policy-badge"></div>
+        </div>
+        <div class="toolbar">
+          <button id="open-editor" class="primary" type="button">变更用途字段</button>
+          <button id="rebuild" class="ghost" type="button">按当前策略重建包</button>
+          <button id="open-basis" class="ghost" type="button">查看授权依据</button>
+        </div>
+      </div>
+
+      <div class="grid-two">
+        <div class="panel">
+          <h2>当前字段授权</h2>
+          <p class="muted small">按类别列出。绿色为允许进入该用途的数据包；灰色为排除，并给出政策理由。</p>
+          <div id="field-grid" class="field-grid"></div>
+        </div>
+        <div class="panel">
+          <h2>包版本</h2>
+          <p class="muted small">每个包绑定一个用途策略版本与数据集版本。策略收紧后旧包退休、保留备查，但不可下载。</p>
+          <div id="package-list" class="package-list"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>订阅与合约</h2>
+        <p class="muted small">续约只能收紧字段。合约版本递增；过期合约的授权会被吊销。</p>
+        <div id="contract-table" class="table-wrap"></div>
+      </div>
+
+      <div class="panel">
+        <h2>下载与确认</h2>
+        <div id="activity" class="activity"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="editor" class="drawer" hidden>
+  <div class="drawer-backdrop" data-close></div>
+  <div class="drawer-body">
+    <div class="drawer-head">
+      <div>
+        <span class="eyebrow">策略变更</span>
+        <h2 id="editor-title">预览影响</h2>
+      </div>
+      <button class="icon" data-close type="button" aria-label="关闭">✕</button>
+    </div>
+    <p class="muted small">续约只允许移除字段。勾选要保留的字段，然后预览；确认后生成新策略版本并排队重建包。</p>
+    <div id="editor-fields" class="field-grid selectable"></div>
+    <label class="note-label">变更说明
+      <input id="editor-note" type="text" placeholder="例如：数据保护评审要求移除精确时间">
+    </label>
+    <div class="drawer-actions">
+      <button id="preview-btn" class="primary" type="button">预览影响</button>
+      <button id="apply-btn" class="danger" type="button" disabled>确认并重建</button>
+    </div>
+    <div id="preview-result" class="preview"></div>
+  </div>
+</div>
+
+<div id="basis" class="drawer wide" hidden>
+  <div class="drawer-backdrop" data-close></div>
+  <div class="drawer-body">
+    <div class="drawer-head">
+      <div>
+        <span class="eyebrow">授权依据</span>
+        <h2>按包追溯</h2>
+      </div>
+      <button class="icon" data-close type="button" aria-label="关闭">✕</button>
+    </div>
+    <div id="basis-content"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+<script src="/static/app.js"></script>
+</body>
+</html>
